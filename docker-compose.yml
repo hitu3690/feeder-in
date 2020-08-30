@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  database:
+    container_name: database
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: feeder
+      MYSQL_DATABASE: feeder
+      MYSQL_USER: feeder
+      MYSQL_PASSWORD: feeder
+      TZ: Asia/Tokyo
+    ports:
+      - 3308:3306
+    volumes:
+      - ./database/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./database/data:/var/lib/mysql
+      - ./database/sql:/docker-entrypoint-initdb.d
+
+  back:
+    container_name: back
+    tty: true
+    depends_on:
+      - database
+    build:
+      context: back/
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - ./back/app:/app
+    command: rails server -b 0.0.0.0
+
+  web:
+    container_name: web
+    tty: true
+    build:
+      context: web/
+      dockerfile: Dockerfile
+    ports:
+      - 8080:3000
+    volumes:
+      - ./web/app:/app
+    command: sh -c 'yarn install; yarn dev'
