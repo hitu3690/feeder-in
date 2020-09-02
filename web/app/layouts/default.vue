@@ -92,6 +92,8 @@
 export default {
   data () {
     return {
+      src: '',
+      styleObj: {},
       clipped: false,
       drawer: false,
       fixed: false,
