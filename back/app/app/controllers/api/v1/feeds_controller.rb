@@ -1,7 +1,4 @@
 class Api::V1::FeedsController < ApplicationController
-  def sort
-  end
-
   def create
     begin
       # feed = current_user.feeds.build(feed_params)
@@ -28,7 +25,6 @@ class Api::V1::FeedsController < ApplicationController
     items = []
     obj.entries.each do |item|
       items += [
-        # :image => item.image.url,
         :title => item.title,
         :url => item.url,
         :summary => item.summary,
@@ -36,25 +32,39 @@ class Api::V1::FeedsController < ApplicationController
       ]
     end
 
-    # if !obj.image.url?
-    #   imageUrl = obj.image.url
-    # end
-
     render :json => {
       feed: {
         id: params[:id],
         url: obj.url,
         title: obj.title,
-        # image: obj.image.url,
         items: items
       }
     }
   end
 
+  def sort
+    user = User.find(1)
+    params[:feed].each_with_index do |item, i|
+      feed = user.feeds.find(item[:id])
+      feed.update(sort_id: i)
+    end
+    render :json => { status: 'success' }
+  end
+
   def index
     user = User.find(1)
-    feeds = user.feeds.all
+    feeds = user.feeds.order(sort_id: :ASC)
     render :json => { status: 'success', data: feeds }
+  end
+
+  def destroy
+    user = User.find(1)
+    feed = user.feeds.find_by(id: params[:id])
+    if feed.destroy
+      render :json => { status: 'sccess' }
+    else
+      render :json => { status: 'error' }
+    end
   end
 
   private
@@ -62,4 +72,5 @@ class Api::V1::FeedsController < ApplicationController
   def feed_params
     params.require(:feed).permit(:url)
   end
+
 end
