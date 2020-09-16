@@ -1,13 +1,10 @@
 class Api::V1::SessionsController < ApplicationController
   def create
-    logger.debug("~~~~~~~~~~~~~~~~~~~~")
-    logger.debug("~~~~~~~~~~~~~~~~~~~~")
-    logger.debug(session_params)
-    logger.debug("~~~~~~~~~~~~~~~~~~~~")
     user = User.find_by(email: session_params[:email])
     if user&.authenticate(session_params[:password])
       session[:user_id] = user.id
-      render :json => { status: 'success', data: user }
+      logger.debug(session)
+      render :json => { status: 'success', data: current_user }
     else
       render :json => { status: 'error' }
     end

@@ -90,10 +90,15 @@ export default {
   mounted: async function() {
     const res3 = await this.$axios.$get('/api/v1/feeds')
     console.log(res3.data);
-    for (let i = 0; i < res3.data.length; i++) {
-      const res4 = await this.$axios.$get(`/api/v1/feeds/${res3.data[i].id}`)
-      console.log(res4.feed);
-      this.feeds.push(res4.feed)
+    if (res3.status == 'error') {
+      alert(res3.data)
+      this.$router.push({ path: 'sessions/new' })
+    } else {
+      for (let i = 0; i < res3.data.length; i++) {
+        const res4 = await this.$axios.$get(`/api/v1/feeds/${res3.data[i].id}`)
+        console.log(res4.feed);
+        this.feeds.push(res4.feed)
+      }
     }
   },
   methods: {
@@ -127,6 +132,11 @@ export default {
       return console.log(res7.status);
     }
   },
+  computed: {
+    user () {
+      return this.$store.getters[`user`]
+    }
+  }
 }
 </script>
 

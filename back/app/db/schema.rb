@@ -12,7 +12,7 @@
 
 ActiveRecord::Schema.define(version: 2020_08_30_053822) do
 
-  create_table "feeds", options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "feeds", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.text "url"
     t.integer "sort_id"
     t.bigint "user_id"
@@ -21,7 +21,7 @@ ActiveRecord::Schema.define(version: 2020_08_30_053822) do
     t.index ["user_id"], name: "index_feeds_on_user_id"
   end
 
-  create_table "users", options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "users", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", force: :cascade do |t|
     t.string "name"
     t.string "email"
     t.string "password_digest"

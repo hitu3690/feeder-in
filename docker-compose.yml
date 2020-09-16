@@ -4,7 +4,7 @@ services:
   database:
     container_name: database
     image: mysql:5.7
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: feeder
       MYSQL_DATABASE: feeder
@@ -27,7 +27,7 @@ services:
       context: back/
       dockerfile: Dockerfile
     ports:
-      - 3000:3000
+      - 3333:3000
     volumes:
       - ./back/app:/app
     command: rails server -b 0.0.0.0

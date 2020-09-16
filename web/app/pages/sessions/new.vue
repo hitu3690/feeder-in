@@ -1,7 +1,7 @@
 <template>
   <v-row justify="center">
     <v-col cols="12" sm="10" md="8" lg="6">
-      <v-card>
+      <v-card v-if="!user.login">
         <v-subheader>ログイン</v-subheader>
 
         <v-form ref="form">
@@ -37,6 +37,9 @@
         </v-card-actions>
 
       </v-card>
+      <v-card v-else>
+        {{ user }}
+      </v-card>
     </v-col>
   </v-row>
 </template>
@@ -47,23 +50,34 @@ export default {
     return {
       loginForm: {
         email: '',
-        passowrd: '',
+        password: '',
       },
       show: false
     }
   },
   methods: {
-    loginSubmit: async function () {
-      try {
-        const res = await this.$axios.$post('/api/v1/sessions', {
-          session: this.loginForm
-        })
-        console.log(res.status);
-        alert(`こんにちは、${res.data.name}`)
-        this.$route.push({ path: "/feeds" })
-      } catch (e) {
-        // console.log(e.response);
-      }
+    loginSubmit () {
+      this.$store.dispatch('login', {
+        email: this.loginForm.email,
+        password: this.loginForm.password,
+      })
+    }
+    // loginSubmit: async function () {
+    //   try {
+    //     const res = await this.$axios.$post('/api/v1/sessions', {
+    //       session: this.loginForm
+    //     })
+    //     console.log(res.status);
+    //     alert(`こんにちは、${res.data.name}`)
+    //     this.$router.push({ path: "/feeds" })
+    //   } catch (e) {
+    //     // console.log(e.response);
+    //   }
+    // }
+  },
+  computed: {
+    user () {
+      return this.$store.getters['user']
     }
   }
 }

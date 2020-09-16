@@ -32,7 +32,12 @@ module App
     # Only loads a smaller set of middleware suitable for API only apps.
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
-    config.api_only = false
+    # config.api_only = false
+    # config.session_store :cookie_store, key: '_app_session'
+    # config.middleware.use ActionDispatch::Cookies
+    # config.middleware.use ActionDispatch::Session::CookieStore
+    # # config.middleware.use ActionDispatch::Session::CookieStore, config.session_options
+    # config.middleware.use ActionDispatch::ContentSecurityPolicy::Middleware
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
@@ -42,6 +47,7 @@ module App
         resource "*",
         headers: :any,
         methods: [:get, :post, :patch, :delete, :head, :options]
+        # credentials: true
       end
     end
   end

@@ -43,6 +43,8 @@
 </template>
 
 <script>
+import firebase from "@/plugins/firebase";
+
 export default {
   data () {
     return {
@@ -57,17 +59,21 @@ export default {
   },
   methods: {
     signupSubmit: async function () {
-      try {
-        const res = await this.$axios.$post('/api/v1/users', {
-          user: this.signupForm
-        })
-        console.log(res.user);
-        alert(`こんにちは、${res.data.name}`)
-        this.$route.push({ path: "/sessions/new" })
-      } catch (e) {
-        alert(e.response.data.error)
-      }
+      const res = await this.$axios.$post('/api/v1/users', {
+        user: this.signupForm
+      })
+      console.log(res.user);
+      alert(`こんにちは、${res.data.name}`)
+      this.$router.push({ path: "/sessions/new" })
     }
+    // signupSubmit () {
+    //   firebase.auth().createUserWithEmailAndPassword(this.signupForm.email, this.signupForm.password)
+    //   .then(res => {
+    //     console.log(res.user);
+    //     alert(`こんにちは、${res.user.name}`)
+    //     this.$router.push({ path: '/sessions/new' })
+    //   })
+    // },
   }
 }
 
