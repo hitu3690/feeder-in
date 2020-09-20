@@ -6,13 +6,17 @@
 
         <v-form ref="form">
           <v-card-text>
-            <v-text-field label="ユーザー名" v-model="signupForm.name"></v-text-field>
+            <v-text-field
+              label="ユーザー名"
+              v-model="signupForm.name"
+            ></v-text-field>
             <v-text-field
               label="メールアドレス"
               v-model="signupForm.email"
               append-icon="mdi-email"
             ></v-text-field>
-            <v-text-field label="パスワード"
+            <v-text-field
+              label="パスワード"
               v-model="signupForm.password"
               :type="show ? 'text' : 'password'"
               class="input-group--focused"
@@ -28,43 +32,49 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-slide-x-reverse-transition></v-slide-x-reverse-transition>
-          <v-btn @click="signupSubmit" color="primary" raised>新規ユーザー登録</v-btn>
+          <v-btn @click="signupSubmit" color="primary" raised
+            >新規ユーザー登録</v-btn
+          >
         </v-card-actions>
 
         <v-divider class="mt-12"></v-divider>
 
         <v-card-actions>
-          <v-btn to="/sessions/new" color="primary" text>すでにユーザー登録がお済みの方はこちら</v-btn>
+          <v-btn to="/sessions/new" color="primary" text
+            >すでにユーザー登録がお済みの方はこちら</v-btn
+          >
         </v-card-actions>
-
       </v-card>
     </v-col>
   </v-row>
 </template>
 
 <script>
-import firebase from "@/plugins/firebase";
+// import firebase from "@/plugins/firebase";
 
 export default {
-  data () {
+  data() {
     return {
       signupForm: {
-        name: '',
-        email: '',
-        password: '',
+        name: "",
+        email: "",
+        password: ""
         // passwordConfirmation: '',
       },
-      show: false,
-    }
+      show: false
+    };
   },
   methods: {
-    signupSubmit: async function () {
-      const res = await this.$axios.$post('/api/v1/users', {
-        user: this.signupForm
-      })
+    signupSubmit: async function() {
+      const res = await this.$axios.$post("/auth", {
+        // user: this.signupForm
+        name: this.signupForm.name,
+        email: this.signupForm.email,
+        password: this.signupForm.password
+      });
       console.log(res.user);
-      alert(`こんにちは、${res.data.name}`)
-      this.$router.push({ path: "/sessions/new" })
+      alert(`こんにちは、${res.data.name}`);
+      this.$router.push({ path: "/sessions/new" });
     }
     // signupSubmit () {
     //   firebase.auth().createUserWithEmailAndPassword(this.signupForm.email, this.signupForm.password)
@@ -75,6 +85,5 @@ export default {
     //   })
     // },
   }
-}
-
+};
 </script>
