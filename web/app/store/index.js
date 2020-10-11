@@ -16,22 +16,7 @@ export const getters = {
 }
 
 export const actions = {
-  // login ({ commit }, payload) {
-  //   firebase.auth().signInWithEmailAndPassword(payload.email, payload.password)
-  //   .then(user => {
-  //     console.log('success');
-  //     firebase.auth().onAuthStateChanged(function (user) {
-  //       if (user) {
-  //         commit('getData', {
-  //           uid: user.id,
-  //           email: user.email
-  //         })
-  //         commit('switchLogin')
-  //       }
-  //     })
-  //   })
-  // },
-  async login ({ commit }, payload) {
+  async login({ commit }, payload) {
     const loginUser = await this.$axios.$post('/api/v1/sessions', {
       session: {
         email: payload.email,
@@ -54,12 +39,12 @@ export const actions = {
 }
 
 export const mutations = {
-  getData (state, payload) {
+  getData(state, payload) {
     state.user.uid = payload.uid
     state.user.name = payload.name
     state.user.email = payload.email
   },
-  switchLogin (state) {
+  switchLogin(state) {
     state.user.login = true
   }
 }
