@@ -1,97 +1,174 @@
 <template>
-  <v-layout
-    column
-    justify-center
-    align-center
-  >
-    <v-flex
-      xs12
-      sm8
-      md6
-    >
-      <div class="text-center">
-        <logo />
-        <vuetify-logo />
-      </div>
-      <v-card>
-        <v-card-title class="headline">
-          Welcome to the Vuetify + Nuxt.js template
-        </v-card-title>
-        <v-card-text>
-          <p>Vuetify is a progressive Material Design component framework for Vue.js. It was designed to empower developers to create amazing applications.</p>
-          <p>
-            For more information on Vuetify, check out the <a
-              href="https://vuetifyjs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              documentation
-            </a>.
-          </p>
-          <p>
-            If you have questions, please join the official <a
-              href="https://chat.vuetifyjs.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="chat"
-            >
-              discord
-            </a>.
-          </p>
-          <p>
-            Find a bug? Report it on the github <a
-              href="https://github.com/vuetifyjs/vuetify/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="contribute"
-            >
-              issue board
-            </a>.
-          </p>
-          <p>Thank you for developing with Vuetify and I look forward to bringing more exciting features in the future.</p>
-          <div class="text-xs-right">
-            <em><small>&mdash; John Leider</small></em>
-          </div>
-          <hr class="my-3">
-          <a
-            href="https://nuxtjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt Documentation
-          </a>
-          <br>
-          <a
-            href="https://github.com/nuxt/nuxt.js"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt GitHub
-          </a>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="primary"
-            nuxt
-            to="/inspire"
-          >
-            Continue
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-flex>
+  <v-layout column justify-center align-center ref="content" class="content">
+    <v-row>
+      <v-col v-for="(pic, i) in picList" :key="i" class="col-4 my-16">
+        <img
+          :src="pic"
+          ref="targetImage"
+          :id="i"
+          @click="next(i)"
+          width="300"
+        />
+      </v-col>
+    </v-row>
   </v-layout>
 </template>
 
 <script>
-import Logo from '~/components/Logo.vue'
-import VuetifyLogo from '~/components/VuetifyLogo.vue'
-
+import Logo from "~/components/Logo.vue";
+import VuetifyLogo from "~/components/VuetifyLogo.vue";
+import { getAbsolutePosition } from "~/plugins/getAbsolutePosition";
+import anime from "animejs/lib/anime.es.js";
 export default {
+  data() {
+    return {
+      picList: [
+        // "img01@2x.jpg",
+        // "img02@2x.jpg",
+        // "img03@2x.jpg",
+        // "img04@2x.jpg",
+        // "img05@2x.jpg",
+      ],
+      picId: null,
+      feeds: [],
+    };
+  },
+  mounted: async function () {
+    const res3 = await this.$axios.$get("/api/v1/feeds");
+    if (res3.status == "error") {
+      alert(res3.data);
+      this.$router.push({ path: "sessions/new" });
+    } else {
+      for (let i = 0; i < res3.data.length; i++) {
+        const res4 = await this.$axios.$get(`/api/v1/feeds/${res3.data[i].id}`);
+        this.feeds.push(res4.feed);
+        const picList = [];
+        const feedTitle = [];
+        this.feeds.forEach((feed) => picList.push(feed.image));
+        this.feeds.forEach((feed) => feedTitle.push(feed.title));
+        this.picList = picList;
+        this.feedTitle = feedTitle;
+        console.log(`このfeedは,${this.picList}`);
+      }
+    }
+  },
   components: {
     Logo,
-    VuetifyLogo
-  }
-}
+    VuetifyLogo,
+  },
+  methods: {
+    next: function (id) {
+      this.picId = id;
+      this.$router.push("/" + id);
+    },
+    setImageData(picId) {
+      const node = this.$refs.targetImage;
+      node[picId].style.opacity = 0;
+      console.log("setImageData node[picId]:", node[picId].style);
+      // const wrapRect = this.$refs.content.getBoundingClientRect();
+      const itemRect = getAbsolutePosition(node[picId]);
+      console.log("itemRect", itemRect);
+
+      // 遷移後の画像の位置を取得
+      const styleObj = {
+        top: `${itemRect.top /*  - wrapRect.top */}px`,
+        left: `${itemRect.left /*  - wrapRect.left */}px`,
+        width: `${node[picId].clientWidth}px`,
+      };
+
+      //node.style.opacity = 0;
+
+      // ダミー画像に情報を渡す
+      Promise.resolve(
+        this.$nuxt.$emit("layoutImageMove", {
+          styleObj: styleObj,
+          node: node[picId],
+        })
+      ).then(() => {
+        // ページの不透明度を1にする
+        anime({
+          targets: this.$refs.content,
+          opacity: [0, 1],
+          easing: "easeInOutQuart",
+          duration: 800,
+          complete: () => {
+            console.log("content show complete");
+          },
+        });
+      });
+    },
+  },
+  beforeRouteLeave(to, from, next) {
+    // クリックした記事の情報を取得
+    const component = this.$refs.targetImage.find((x) => {
+      return x.id === String(this.picId);
+    });
+    // 遷移前の画像の位置を取得
+    const src = component.src;
+    console.log("src:", src);
+    const pos = getAbsolutePosition(component);
+    console.log(pos);
+    const styleObj = {
+      top: `${pos.top}px`,
+      left: `${pos.left}px`,
+      width: `${component.clientWidth}px`,
+    };
+    // ダミー画像に位置と画像のURLを渡す
+    this.$nuxt.$emit("layoutImage", {
+      src: src,
+      styleObj: styleObj,
+    });
+    const scrollElement =
+      window.document.scrollingElement ||
+      window.document.body ||
+      window.document.documentElement;
+    // ページを上部に移動
+    anime({
+      targets: scrollElement,
+      scrollTop: 0,
+      easing: "easeInOutQuart",
+      duration: 800,
+      complete: () => {
+        console.log("scrollTop complete");
+      },
+    });
+    // ページの不透明度を0にアニメーション
+    anime({
+      targets: this.$refs.content,
+      opacity: [1, 0],
+      easing: "easeInOutQuart",
+      duration: 800,
+      complete: () => {
+        next();
+      },
+    });
+  },
+  beforeRouteEnter(to, from, next) {
+    if (from.name === null) {
+      next((vm) => {
+        //vm.styleObj.opacity = 1;
+        console.log("this:", vm);
+        anime({
+          targets: vm.$refs.content,
+          opacity: [0, 1],
+          easing: "easeInOutQuart",
+          duration: 800,
+          complete: () => {
+            console.log("content show complete");
+          },
+        });
+      });
+    } else {
+      console.log("from.params.id:", from.params.id);
+      // 遷移時にアニメーションを実行
+      next((vm) => vm.setImageData(from.params.id));
+    }
+  },
+};
 </script>
+
+<style>
+.content {
+  opacity: 0;
+}
+</style>

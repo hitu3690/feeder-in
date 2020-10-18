@@ -1,18 +1,12 @@
-class Api::V1::FeedsController < ApplicationController
-  def create
-    # RSS URLかどうかの判別
-    begin
-      # feed = current_current_user.feeds.build(feed_params)
-      current_user = User.find(1)
-      feed = current_user.feeds.build(feed_params)
-      xml = HTTParty.get(feed.url).body
-      obj = Feedjira.parse(xml)
-    rescue => error
-      return render :json => { status: error }
-    end
 
-    if feed.save
-      render :json => { status: 'success', id: feed.id }
+class Api::V1::FeedsController < ApplicationController
+  before_action :valid_url, only: [:create]
+  # require 'nokogiri'
+  # require 'open-uri'
+
+  def create
+    if @feed.save
+      render :json => { status: 'success', id: @feed.id }
     else
       render :json => { status: 'error' }
     end
@@ -22,7 +16,34 @@ class Api::V1::FeedsController < ApplicationController
   def show
     feed = Feed.find_by(id: params[:id])
     xml = HTTParty.get(feed.url).body
+    logger.debug("~~~~~~~~~~~~~~~")
+    logger.debug("~~~~~~~~~~~~~~~")
+    logger.debug(xml)
+    logger.debug("---------------")
+    logger.debug("---------------")
     obj = Feedjira.parse(xml)
+
+    # doc = Nokogiri::HTML.parse(obj)
+    # doc.css('img').each do |src|
+    # end
+
+    # img_tags = obj.entries.map do |entry|
+    #   Nokogiri::HTML.parse(entry.summary).css('img').to_html
+    # end
+    img = []
+    obj.entries.each do |entry|
+      Nokogiri::HTML.parse(entry.summary).css('img').each do |src|
+        img = src[:src]
+      end
+    end
+
+    # logger.debug(img_tags[:src])
+
+    # doc = Nokogiri::XML.parse(open("http://www.webcreatorbox.com/feed/").read)
+    # doc.xpath('//channel/item').map do |item|
+    #   Nokogiri::HTML.parse(item.xpath('description').text).css('img').to_html
+    # end
+
     items = []
     obj.entries.each do |item|
       items += [
@@ -33,13 +54,15 @@ class Api::V1::FeedsController < ApplicationController
       ]
     end
 
-    render :json => {
+    render json: {
       feed: {
         id: params[:id],
         url: obj.url,
         title: obj.title,
-        items: items
-      }
+        items: items,
+        image: img,
+        show: false,
+      },
     }
     # feeds = Feed.where(user_id: params[:user_id]).order(sort_id: :ASC)
     # feeds.each do |feed|
@@ -78,9 +101,6 @@ class Api::V1::FeedsController < ApplicationController
   def index
     # user = User.find(1)
     # current_user = User.find_by(id: session[:user_id])
-    logger.debug(session)
-    logger.debug(current_user == nil)
-    logger.debug("~~~~~~~~~~~~~~~~~~~~")
     # feeds = current_user.feeds.order(sort_id: :ASC)
     current_user = User.find_by(id: 1)
     if current_user
@@ -106,6 +126,19 @@ class Api::V1::FeedsController < ApplicationController
 
   def feed_params
     params.require(:feed).permit(:url, :user_id)
+  end
+
+  def valid_url
+    # RSS URLかどうかの判別
+    begin
+      # feed = current_current_user.feeds.build(feed_params)
+      current_user = User.find(1)
+      @feed = current_user.feeds.build(feed_params)
+      xml = HTTParty.get(@feed.url).body
+      obj = Feedjira.parse(xml)
+    rescue => error
+      return render :json => { status: error }
+    end
   end
 
 end

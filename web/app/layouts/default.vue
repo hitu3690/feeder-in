@@ -6,6 +6,7 @@
       :clipped="clipped"
       fixed
       app
+      id="v-drawer"
     >
       <v-list>
         <v-list-item
@@ -24,10 +25,12 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
+
     <v-app-bar
       :clipped-left="clipped"
       fixed
       app
+      id="v-appbar"
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-btn
@@ -50,6 +53,7 @@
       </v-btn>
       <v-toolbar-title v-text="title" />
       <v-spacer />
+      <!-- <nuxt-link to="/sessions/new">ログインはこちら</nuxt-link> -->
       <v-btn
         icon
         @click.stop="rightDrawer = !rightDrawer"
@@ -57,11 +61,21 @@
         <v-icon>mdi-menu</v-icon>
       </v-btn>
     </v-app-bar>
-    <v-main>
+
+    <v-main id="v-main">
       <v-container>
+        <header />
         <nuxt />
+        <img
+          :src="src"
+          :style="styleObj"
+          v-if="styleObj.width !== ''"
+          class="dummy_image"
+          alt=""
+        >
       </v-container>
     </v-main>
+
     <v-navigation-drawer
       v-model="rightDrawer"
       :right="right"
@@ -79,6 +93,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
+
     <v-footer
       :absolute="!fixed"
       app
@@ -89,11 +104,10 @@
 </template>
 
 <script>
+import anime from 'animejs/lib/anime.es.js'
 export default {
   data () {
     return {
-      src: '',
-      styleObj: {},
       clipped: false,
       drawer: false,
       fixed: false,
@@ -101,19 +115,62 @@ export default {
         {
           icon: 'mdi-apps',
           title: 'Welcome',
-          to: '/'
+          to: '/',
         },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire'
-        }
+        // {
+        //   icon: 'mdi-chart-bubble',
+        //   title: 'サインアップ',
+        //   to: '/users/new',
+        // },
+        // {
+        //   icon: 'mdi-chart-bubble',
+        //   title: 'ログイン',
+        //   to: '/sessions/new',
+        // },
       ],
       miniVariant: false,
       right: true,
       rightDrawer: false,
-      title: 'Feeder-in'
+      title: 'Vuetify.js',
+      src: '',
+      styleObj: {}
+    }
+  },
+  created(){
+    this.$nuxt.$on('layoutImage', this.layoutImage)
+    this.$nuxt.$on('layoutImageMove', this.layoutImageMove)
+  },
+  methods: {
+    layoutImage({src, styleObj}) {
+      this.src = src;
+      this.styleObj = styleObj;
+      console.log("defaultMethod called")
+    },
+    layoutImageMove({node, styleObj}) {
+      anime({
+        targets: this.styleObj,
+        top: styleObj.top,
+        left: styleObj.left,
+        width: styleObj.width,
+        easing: 'easeInOutQuart',
+        duration: 800,
+        complete: () => {
+          console.log("layoutImageMove called")
+          node.style.opacity = 1;
+          this.styleObj = {
+            top: '',
+            left: '',
+            width: ''
+          }
+        }
+      });
     }
   }
 }
 </script>
+
+<style>
+.dummy_image{
+  position: absolute;
+}
+</style>
